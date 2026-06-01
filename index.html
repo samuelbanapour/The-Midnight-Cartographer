@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Midnight Cartographer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- SCREEN: Start -->
+  <div id="screen-start" class="screen active">
+    <div class="rain-bg"></div>
+    <div class="start-content">
+      <div class="start-owl">🦉</div>
+      <h1 class="game-title">The Midnight<br>Cartographer</h1>
+      <p class="start-subtitle">A cozy map-making mystery</p>
+      <p class="start-desc">
+        You are Pip, an owl who runs a magical cartography shop.<br>
+        Adventurers bring you rumors and half-baked directions —<br>
+        you piece them together into maps.<br><br>
+        Get the maps right, and the world's deepest secrets<br>
+        may reveal themselves…
+      </p>
+      <button id="btn-start" class="btn btn-primary">✦ Open the Shop ✦</button>
+    </div>
+    <div class="candle-glow start-glow"></div>
+  </div>
+
+  <!-- SCREEN: Game -->
+  <div id="screen-game" class="screen">
+
+    <!-- Left: Shop Panel -->
+    <aside id="shop-panel">
+      <div class="owl-container">
+        <div class="owl-sprite">🦉</div>
+        <div class="owl-name">Pip</div>
+        <div class="candle-glow shop-glow"></div>
+      </div>
+
+      <div class="shop-stats">
+        <div class="stat-row">
+          <span class="stat-label">Night</span>
+          <span id="stat-night" class="stat-value">1</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Gold</span>
+          <span id="stat-gold" class="stat-value">💰 50</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Reputation</span>
+          <div id="stat-rep" class="rep-stars"></div>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Queue</span>
+          <span id="stat-queue" class="stat-value">—</span>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <div class="event-log">
+        <div class="event-log-title">Shop Journal</div>
+        <div id="event-log-entries"></div>
+      </div>
+    </aside>
+
+    <!-- Center: Map Panel -->
+    <main id="map-panel">
+      <div class="map-header">
+        <div class="compass-rose">
+          <span class="compass-n">N</span>
+          <span class="compass-e">E</span>
+          <span class="compass-s">S</span>
+          <span class="compass-w">W</span>
+        </div>
+        <h2 id="map-title">Draft Map</h2>
+      </div>
+
+      <div class="map-frame">
+        <div class="map-corner tl"></div>
+        <div class="map-corner tr"></div>
+        <div class="map-corner bl"></div>
+        <div class="map-corner br"></div>
+        <div id="map-grid" class="map-grid"></div>
+      </div>
+
+      <div class="map-controls">
+        <button id="btn-clear" class="btn btn-secondary">🗑 Clear</button>
+        <div id="placement-hint" class="placement-hint">Select a tile → click the map to place it</div>
+        <button id="btn-submit" class="btn btn-primary">📜 Submit Map</button>
+      </div>
+    </main>
+
+    <!-- Right: Customer Panel -->
+    <aside id="customer-panel">
+
+      <div id="customer-info-box" class="customer-info-box">
+        <div class="customer-portrait">
+          <span id="customer-emoji">❓</span>
+        </div>
+        <div class="customer-details">
+          <div id="customer-name" class="customer-name">—</div>
+          <div id="customer-type" class="customer-type">Waiting…</div>
+        </div>
+      </div>
+
+      <div class="testimony-box">
+        <div class="box-title">📖 Their Account</div>
+        <div id="testimony-text" class="testimony-text"></div>
+      </div>
+
+      <div class="palette-box">
+        <div class="box-title">🗂 Map Tiles</div>
+        <div id="tile-palette" class="tile-palette"></div>
+        <div class="palette-hint">Click tile → click map to place &nbsp;|&nbsp; Right-click map to erase</div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- MODAL: Map Result -->
+  <div id="modal-result" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <h2 id="result-title">Map Submitted!</h2>
+      <div id="result-score-display" class="score-display"></div>
+      <div id="result-feedback" class="result-feedback"></div>
+      <div id="result-reward" class="result-reward"></div>
+      <button id="btn-next-customer" class="btn btn-primary">Next Customer →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: Night End -->
+  <div id="screen-night-end" class="screen">
+    <div class="night-end-content">
+      <div class="night-owl">🦉</div>
+      <h2 id="night-end-title">Night Complete</h2>
+      <div id="night-end-summary" class="night-end-summary"></div>
+      <div id="world-shift-news" class="world-shift-news hidden">
+        <h3>🌍 Strange Tidings From the Road…</h3>
+        <div id="world-shift-text"></div>
+      </div>
+      <button id="btn-to-shop" class="btn btn-primary">Visit the Supply Store →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: Shop -->
+  <div id="screen-shop" class="screen">
+    <div class="shop-screen-content">
+      <div class="shop-screen-owl">🦉</div>
+      <h2>Pip's Cartography Supplies</h2>
+      <p class="shop-screen-sub">Spend your gold on tools and upgrades before the next night.</p>
+      <div class="shop-gold-display">Available Gold: <span id="shop-gold-amount">50</span> 💰</div>
+      <div id="upgrade-grid" class="upgrade-grid"></div>
+      <button id="btn-next-night" class="btn btn-primary">Begin Night <span id="next-night-num">2</span> →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: End -->
+  <div id="screen-end" class="screen">
+    <div class="end-content">
+      <div class="end-owl">🦉</div>
+      <h2 id="end-title">The Dawn Arrives</h2>
+      <div id="end-narrative" class="end-narrative"></div>
+      <div id="final-score" class="final-score"></div>
+      <button id="btn-restart" class="btn btn-primary">✦ Play Again ✦</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

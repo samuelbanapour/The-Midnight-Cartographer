@@ -1,0 +1,12 @@
+{
+  "name": "the-midnight-cartographer",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A cozy map-making mystery game",
+  "scripts": {
+    "start": "npx serve . -p 3000",
+    "dev": "npx serve . -p 3000"
+  },
+  "keywords": ["game", "puzzle", "cozy"],
+  "license": "MIT"
+}
