@@ -1,0 +1,25 @@
+{
+  "name": "The Midnight Cartographer",
+  "short_name": "Cartographer",
+  "description": "A cozy late-night cartography shop. Draw maps from rumor and memory.",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1a0e05",
+  "background_color": "#1a0e05",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
