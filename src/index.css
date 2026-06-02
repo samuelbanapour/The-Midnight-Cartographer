@@ -1,0 +1,328 @@
+@import "tailwindcss";
+
+/* ---- CSS Custom Properties ---- */
+:root {
+  --color-bg: #1a0e05;
+  --color-surface: #241408;
+  --color-surface-raised: #2e1a0a;
+  --color-amber: #d4a017;
+  --color-amber-dim: #a07810;
+  --color-brown: #8b5e3c;
+  --color-cream: #f5e6d0;
+  --color-cream-dim: #c4b49a;
+  --color-green: #2d5a27;
+  --color-blue: #1a3d5c;
+  --color-gray: #4a4a52;
+  --color-danger: #8b2020;
+  --color-success: #2d6b27;
+}
+
+/* ---- Base ---- */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg);
+  color: var(--color-cream);
+  font-family: 'Spectral', serif;
+  min-height: 100vh;
+  overscroll-behavior: none;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Typography utilities ---- */
+.font-spectral {
+  font-family: 'Spectral', serif;
+}
+
+.font-kalam {
+  font-family: 'Kalam', cursive;
+}
+
+.text-amber {
+  color: #d4a017;
+}
+
+.text-cream {
+  color: #f5e6d0;
+}
+
+/* ---- Background / surface utilities ---- */
+.bg-shop {
+  background-color: var(--color-bg);
+}
+
+.bg-surface {
+  background-color: var(--color-surface);
+}
+
+.bg-surface-raised {
+  background-color: var(--color-surface-raised);
+}
+
+/* ---- Candle glow overlay ---- */
+.candle-glow {
+  position: relative;
+}
+
+.candle-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 60% 40% at 50% 0%,
+    rgba(212, 160, 23, 0.08) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.candle-glow > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Keyframe Animations ---- */
+@keyframes candleFlicker {
+  0%,  100% { opacity: 1; }
+  20%        { opacity: 0.92; }
+  40%        { opacity: 0.96; }
+  60%        { opacity: 0.90; }
+  80%        { opacity: 0.95; }
+}
+
+@keyframes inkDrop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+@keyframes fadeIn {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rainDrop {
+  0%   { transform: translateY(-10px); opacity: 0; }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes pulse-amber {
+  0%, 100% { box-shadow: 0 0 8px rgba(212,160,23,0.3); }
+  50%       { box-shadow: 0 0 20px rgba(212,160,23,0.6); }
+}
+
+/* ---- Animation utility classes ---- */
+.animate-candle-flicker {
+  animation: candleFlicker 3s ease-in-out infinite;
+}
+
+.animate-ink-drop {
+  animation: inkDrop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-pulse-amber {
+  animation: pulse-amber 2s ease-in-out infinite;
+}
+
+/* ---- Rain ---- */
+.rain-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.rain-drop {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(180, 200, 220, 0.35)
+  );
+  animation: rainDrop linear infinite;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-brown);
+  border-radius: 3px;
+}
+
+/* ---- Buttons ---- */
+.btn-amber {
+  background-color: var(--color-amber);
+  color: #1a0e05;
+  font-family: 'Spectral', serif;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.btn-amber:hover:not(:disabled) {
+  background-color: #e0b020;
+  transform: translateY(-1px);
+}
+
+.btn-amber:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-cream);
+  font-family: 'Spectral', serif;
+  padding: 0.4rem 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-brown);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  border-color: var(--color-amber);
+  background-color: rgba(212,160,23,0.08);
+}
+
+.btn-ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---- Cards ---- */
+.card-shop {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-brown);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.card-shop-raised {
+  background-color: var(--color-surface-raised);
+  border: 1px solid var(--color-amber-dim);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* ---- Dialogue bubble ---- */
+.dialogue-bubble {
+  background-color: var(--color-surface-raised);
+  border: 1px solid var(--color-brown);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  position: relative;
+  font-family: 'Spectral', serif;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--color-cream);
+}
+
+.dialogue-bubble::before {
+  content: '\201C';
+  font-size: 2.5rem;
+  color: var(--color-amber);
+  position: absolute;
+  top: -0.5rem;
+  left: 0.75rem;
+  line-height: 1;
+  font-style: normal;
+}
+
+/* ---- Reputation bar ---- */
+.rep-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.6s ease, background-color 0.4s ease;
+}
+
+/* ---- Map grid cells ---- */
+.map-cell {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 3px;
+  border: 1px solid rgba(139, 94, 60, 0.25);
+  transition: filter 0.1s, transform 0.1s;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-cell:hover {
+  filter: brightness(1.25);
+  transform: scale(1.04);
+  z-index: 2;
+}
+
+.map-cell.locked {
+  border: 2px solid var(--color-amber);
+  box-shadow: 0 0 8px rgba(212,160,23,0.4);
+  cursor: default;
+}
+
+.map-cell.locked:hover {
+  transform: none;
+  filter: none;
+}
+
+.map-cell.correct-reveal {
+  border: 2px solid #4caf50;
+  box-shadow: 0 0 6px rgba(76,175,80,0.5);
+}
+
+.map-cell.incorrect-reveal {
+  border: 2px solid #e53935;
+  box-shadow: 0 0 6px rgba(229,57,53,0.5);
+}
