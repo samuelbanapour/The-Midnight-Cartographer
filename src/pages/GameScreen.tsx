@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { GameState, TileType, ActiveContract } from '../game/types';
 import {
   emptyGrid,
@@ -11,7 +11,7 @@ import {
   saveGame,
 } from '../game/engine';
 import { WORLD_REGIONS } from '../game/worldMap';
-import { showInterstitialIfNeeded } from '../services/monetization';
+import { isSupporter, onEntitlementChange } from '../services/monetization';
 import MapGrid from '../components/MapGrid';
 import TileSelector from '../components/TileSelector';
 import CustomerPanel from '../components/CustomerPanel';
@@ -33,6 +33,10 @@ export default function GameScreen({ state, onStateChange }: GameScreenProps) {
   const [nightGoldTotal, setNightGoldTotal] = useState(0);
   const [nightRepTotal, setNightRepTotal] = useState(0);
 
+  // Supporters (one-time "Tip the Owl" purchase) can flip back through clues.
+  const [supporter, setSupporter] = useState(isSupporter());
+  useEffect(() => onEntitlementChange(setSupporter), []);
+
   const hasExtraClue = state.upgrades.some(u => u.id === 'magnifying_glass' && u.purchased);
 
   const currentCustomer = state.customerQueue[state.currentCustomerIndex] ?? null;
@@ -51,6 +55,12 @@ export default function GameScreen({ state, onStateChange }: GameScreenProps) {
       setAllCluesSeen(true);
     }
   }, [clueIndex, totalClues]);
+
+  // ---- Review a previous clue (supporter perk) ----
+  const handlePrevClue = useCallback(() => {
+    if (!supporter) return;
+    setClueIndex(i => Math.max(0, i - 1));
+  }, [supporter]);
 
   // ---- Begin mapping ----
   const handleBeginMapping = useCallback(() => {
@@ -234,8 +244,6 @@ export default function GameScreen({ state, onStateChange }: GameScreenProps) {
       onStateChange({ ...state, phase: 'game_over' });
       return;
     }
-    // Show an interstitial at the night break (no-op if ads were removed).
-    void showInterstitialIfNeeded();
     const nextDay = state.day + 1;
     const queue = buildQueue(nextDay);
     const firstCustomer = queue[0]!;
@@ -427,6 +435,8 @@ export default function GameScreen({ state, onStateChange }: GameScreenProps) {
               clueIndex={clueIndex}
               hasExtraClue={hasExtraClue}
               onNextClue={handleNextClue}
+              onPrevClue={handlePrevClue}
+              canReviewClues={supporter}
               onBeginMapping={handleBeginMapping}
               allCluesSeen={allCluesSeen || isDrawing || isSubmitted}
             />

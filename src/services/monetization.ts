@@ -1,6 +1,10 @@
 // ---------------------------------------------------------------------------
-// Monetization: interstitial ads (Amazon Mobile Ads) + "Remove Ads" IAP
+// Monetization: optional "Tip the Owl" support purchase (Amazon IAP)
 // ---------------------------------------------------------------------------
+// The game is free with no ads. Players can optionally make a one-time
+// purchase to support the developer, which grants a permanent "supporter"
+// entitlement (a small thank-you state in the UI).
+//
 // The native work happens in a custom Capacitor plugin named "Monetization"
 // (see native/android/MonetizationPlugin.java and AMAZON_MONETIZATION_SETUP.md).
 //
@@ -10,24 +14,22 @@
 
 import { Capacitor, registerPlugin } from '@capacitor/core';
 
-export const REMOVE_ADS_SKU = 'com.midnightcartographer.game.remove_ads';
+export const SUPPORTER_SKU = 'com.midnightcartographer.game.supporter';
 
 interface MonetizationPlugin {
-  /** Initialise the ad SDK + IAP listener and preload the first interstitial. */
+  /** Initialise the IAP listener and sync entitlements. */
   initialize(): Promise<void>;
-  /** Returns whether the user owns the remove-ads entitlement. */
-  getEntitlements(): Promise<{ adsRemoved: boolean }>;
-  /** Show a preloaded interstitial (resolves once it is dismissed). */
-  showInterstitial(): Promise<{ shown: boolean }>;
+  /** Returns whether the user owns the supporter entitlement. */
+  getEntitlements(): Promise<{ supporter: boolean }>;
   /** Start the Amazon purchase flow for the given SKU. */
   purchase(options: { sku: string }): Promise<{ owned: boolean }>;
   /** Re-query Amazon for previously purchased entitlements. */
-  restore(): Promise<{ adsRemoved: boolean }>;
+  restore(): Promise<{ supporter: boolean }>;
 }
 
 const Monetization = registerPlugin<MonetizationPlugin>('Monetization');
 
-const ENTITLEMENT_KEY = 'mc_ads_removed';
+const ENTITLEMENT_KEY = 'mc_supporter';
 const isNative = Capacitor.isNativePlatform();
 
 // ---- Local entitlement cache (source of truth for the UI) -----------------
@@ -46,19 +48,19 @@ function writeCache(value: boolean): void {
   } catch {
     /* ignore */
   }
-  if (value !== adsRemoved) {
-    adsRemoved = value;
-    listeners.forEach(fn => fn(adsRemoved));
+  if (value !== supporter) {
+    supporter = value;
+    listeners.forEach(fn => fn(supporter));
   } else {
-    adsRemoved = value;
+    supporter = value;
   }
 }
 
-let adsRemoved = readCache();
+let supporter = readCache();
 
 // ---- Subscription so React UI can react to entitlement changes ------------
 
-type Listener = (adsRemoved: boolean) => void;
+type Listener = (supporter: boolean) => void;
 const listeners = new Set<Listener>();
 
 export function onEntitlementChange(fn: Listener): () => void {
@@ -66,8 +68,8 @@ export function onEntitlementChange(fn: Listener): () => void {
   return () => listeners.delete(fn);
 }
 
-export function isAdsRemoved(): boolean {
-  return adsRemoved;
+export function isSupporter(): boolean {
+  return supporter;
 }
 
 // ---- Public API -----------------------------------------------------------
@@ -76,7 +78,7 @@ export async function initMonetization(): Promise<void> {
   if (!isNative) return;
   try {
     await Monetization.initialize();
-    const { adsRemoved: owned } = await Monetization.getEntitlements();
+    const { supporter: owned } = await Monetization.getEntitlements();
     writeCache(owned);
   } catch (err) {
     console.warn('[monetization] init failed', err);
@@ -84,30 +86,17 @@ export async function initMonetization(): Promise<void> {
 }
 
 /**
- * Show an interstitial at a natural break, but only if the player has not
- * purchased "Remove Ads". Fire-and-forget friendly — never throws.
- */
-export async function showInterstitialIfNeeded(): Promise<void> {
-  if (adsRemoved || !isNative) return;
-  try {
-    await Monetization.showInterstitial();
-  } catch (err) {
-    console.warn('[monetization] interstitial failed', err);
-  }
-}
-
-/**
- * Start the Remove Ads purchase. Returns true if the entitlement is owned
+ * Start the supporter purchase. Returns true if the entitlement is owned
  * afterwards. On the web this simulates a successful purchase so the flow can
  * be exercised in the browser; the real receipt check happens on-device.
  */
-export async function purchaseRemoveAds(): Promise<boolean> {
+export async function purchaseSupporter(): Promise<boolean> {
   if (!isNative) {
     writeCache(true); // dev/browser simulation only
     return true;
   }
   try {
-    const { owned } = await Monetization.purchase({ sku: REMOVE_ADS_SKU });
+    const { owned } = await Monetization.purchase({ sku: SUPPORTER_SKU });
     if (owned) writeCache(true);
     return owned;
   } catch (err) {
@@ -118,9 +107,9 @@ export async function purchaseRemoveAds(): Promise<boolean> {
 
 /** Restore a previously purchased entitlement (required by Amazon). */
 export async function restorePurchases(): Promise<boolean> {
-  if (!isNative) return adsRemoved;
+  if (!isNative) return supporter;
   try {
-    const { adsRemoved: owned } = await Monetization.restore();
+    const { supporter: owned } = await Monetization.restore();
     writeCache(owned);
     return owned;
   } catch (err) {

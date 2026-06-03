@@ -2,6 +2,9 @@
 
 Apply these edits to the **app module** Gradle file after `npx cap add android`.
 
+The game is free with no ads, so the only native dependency is the Amazon
+Appstore SDK (IAP) for the optional "Tip the Owl" purchase.
+
 ## 1. Load signing keys from `key.properties` (top of the file)
 
 Add **above** the `android { … }` block:
@@ -41,30 +44,24 @@ android {
 }
 ```
 
-## 3. Dependencies
+## 3. Dependencies — pick up the Amazon IAP jar from `libs/`
 
 ```gradle
 dependencies {
-    // Vungle (Liftoff) ads — resolved from Maven Central, no jar download needed.
-    implementation 'com.vungle:vungle-ads:7.4.1'
-
-    // Amazon Appstore SDK (IAP) — the one jar you still download from the
-    // Amazon developer portal. Drop it in android/app/libs/.
+    // Amazon Appstore SDK (IAP) — the one jar you download from the Amazon
+    // developer portal. Drop it in android/app/libs/.
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
 
     // ...existing Capacitor / AndroidX deps...
 }
 ```
 
-`mavenCentral()` is already in the Capacitor-generated root `build.gradle`, so the
-Vungle line resolves with no extra repository config.
-
-Put the one downloaded jar in `android/app/libs/`:
+Put the downloaded jar in `android/app/libs/`:
 
 ```
 android/app/libs/in-app-purchasing-3.0.x.jar      # Amazon Appstore SDK (IAP)
 ```
 
-> The Amazon **Mobile Ads SDK no longer exists** — Amazon retired it. Ads on Fire
-> tablets now come from third-party networks; we use Vungle. There is no
-> `amazon-ads-*.jar` to download anymore.
+> No ad SDK is used. Amazon retired its own Mobile Ads SDK, and standalone
+> third-party ad networks gate signup behind Google Play / Apple URLs that an
+> Amazon-only app cannot provide. v1 ships free with an optional tip instead.

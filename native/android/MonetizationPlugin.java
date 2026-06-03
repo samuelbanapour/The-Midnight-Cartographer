@@ -1,15 +1,16 @@
 package com.midnightcartographer.game;
 
 // ---------------------------------------------------------------------------
-// MonetizationPlugin — Vungle (Liftoff) interstitials + Amazon IAP (remove ads)
+// MonetizationPlugin — optional "Tip the Owl" supporter IAP (Amazon Appstore)
 // ---------------------------------------------------------------------------
+// The game is free with no ads. This plugin exposes a single one-time
+// "supporter" entitlement so players can optionally tip the developer.
+//
 // Copy this file into your generated Android project after `npx cap add android`:
 //   android/app/src/main/java/com/midnightcartographer/game/MonetizationPlugin.java
 // and register it in MainActivity (see AMAZON_MONETIZATION_SETUP.md).
 //
-// Ads:  Vungle Ads SDK (Maven Central — no jar download). Fire-tablet compatible.
-// IAP:  Amazon Appstore SDK (in-app-purchasing) for the Remove Ads entitlement.
-// Setup steps are in AMAZON_MONETIZATION_SETUP.md.
+// Requires the Amazon Appstore SDK (in-app-purchasing) on the classpath.
 // ---------------------------------------------------------------------------
 
 import android.util.Log;
@@ -30,58 +31,24 @@ import com.amazon.device.iap.model.PurchaseUpdatesResponse;
 import com.amazon.device.iap.model.Receipt;
 import com.amazon.device.iap.model.UserDataResponse;
 
-// --- Vungle (Liftoff) Ads -----------------------------------------------------
-import com.vungle.ads.BaseAd;
-import com.vungle.ads.InitializationListener;
-import com.vungle.ads.InterstitialAd;
-import com.vungle.ads.InterstitialAdListener;
-import com.vungle.ads.VungleAds;
-import com.vungle.ads.VungleError;
-
 @CapacitorPlugin(name = "Monetization")
 public class MonetizationPlugin extends Plugin {
 
     private static final String TAG = "Monetization";
 
     // The SKU you create in the Amazon Developer Console (must match the JS side).
-    private static final String REMOVE_ADS_SKU = "com.midnightcartographer.game.remove_ads";
+    private static final String SUPPORTER_SKU = "com.midnightcartographer.game.supporter";
 
-    // From the Vungle/Liftoff dashboard (https://publisher.vungle.com).
-    private static final String VUNGLE_APP_ID = "YOUR_VUNGLE_APP_ID";
-    private static final String VUNGLE_PLACEMENT_ID = "YOUR_VUNGLE_INTERSTITIAL_PLACEMENT_ID";
+    private boolean supporter = false;
 
-    private boolean adsRemoved = false;
-    private boolean adsInitialized = false;
-    private InterstitialAd interstitialAd;
-
-    // Outstanding calls awaiting an async callback.
+    // Outstanding calls awaiting an async Amazon callback.
     private PluginCall pendingPurchaseCall;
     private PluginCall pendingRestoreCall;
-    private PluginCall pendingInterstitialCall;
 
     @Override
     public void load() {
         super.load();
-
-        // --- Initialise Vungle Ads ---
-        try {
-            VungleAds.init(getContext(), VUNGLE_APP_ID, new InitializationListener() {
-                @Override
-                public void onSuccess() {
-                    adsInitialized = true;
-                    loadInterstitial(); // preload the first one
-                }
-
-                @Override
-                public void onError(VungleError error) {
-                    Log.w(TAG, "Vungle init failed: " + error.getErrorMessage());
-                }
-            });
-        } catch (Exception e) {
-            Log.w(TAG, "Vungle init threw", e);
-        }
-
-        // --- Register the IAP listener ---
+        // Register the IAP listener.
         PurchasingService.registerListener(getContext(), purchasingListener);
     }
 
@@ -89,45 +56,22 @@ public class MonetizationPlugin extends Plugin {
 
     @PluginMethod
     public void initialize(PluginCall call) {
-        // Sync user + entitlements, then preload an interstitial.
+        // Sync user + entitlements.
         PurchasingService.getUserData();
         PurchasingService.getPurchaseUpdates(true);
-        if (adsInitialized) {
-            loadInterstitial();
-        }
         call.resolve();
     }
 
     @PluginMethod
     public void getEntitlements(PluginCall call) {
         JSObject ret = new JSObject();
-        ret.put("adsRemoved", adsRemoved);
+        ret.put("supporter", supporter);
         call.resolve(ret);
     }
 
     @PluginMethod
-    public void showInterstitial(final PluginCall call) {
-        if (adsRemoved) {
-            JSObject ret = new JSObject();
-            ret.put("shown", false);
-            call.resolve(ret);
-            return;
-        }
-        pendingInterstitialCall = call;
-        getActivity().runOnUiThread(() -> {
-            if (interstitialAd != null && interstitialAd.canPlayAd()) {
-                interstitialAd.play(getContext());
-            } else {
-                // Not ready yet — resolve gracefully and start loading the next one.
-                resolveInterstitial(false);
-                loadInterstitial();
-            }
-        });
-    }
-
-    @PluginMethod
     public void purchase(PluginCall call) {
-        String sku = call.getString("sku", REMOVE_ADS_SKU);
+        String sku = call.getString("sku", SUPPORTER_SKU);
         pendingPurchaseCall = call;
         PurchasingService.purchase(sku);
     }
@@ -136,65 +80,6 @@ public class MonetizationPlugin extends Plugin {
     public void restore(PluginCall call) {
         pendingRestoreCall = call;
         PurchasingService.getPurchaseUpdates(true);
-    }
-
-    // ===================== Vungle Ads ======================================
-
-    private void loadInterstitial() {
-        if (!adsInitialized || adsRemoved) return;
-        getActivity().runOnUiThread(() -> {
-            try {
-                interstitialAd = new InterstitialAd(getContext(), VUNGLE_PLACEMENT_ID, new com.vungle.ads.AdConfig());
-                interstitialAd.setAdListener(new InterstitialAdListener() {
-                    @Override
-                    public void onAdLoaded(BaseAd baseAd) {
-                        // Ready to show.
-                    }
-
-                    @Override
-                    public void onAdFailedToLoad(BaseAd baseAd, VungleError error) {
-                        Log.w(TAG, "Interstitial failed to load: " + error.getErrorMessage());
-                    }
-
-                    @Override
-                    public void onAdStart(BaseAd baseAd) {}
-
-                    @Override
-                    public void onAdImpression(BaseAd baseAd) {}
-
-                    @Override
-                    public void onAdClicked(BaseAd baseAd) {}
-
-                    @Override
-                    public void onAdEnd(BaseAd baseAd) {
-                        resolveInterstitial(true);
-                        loadInterstitial(); // preload the next one
-                    }
-
-                    @Override
-                    public void onAdFailedToPlay(BaseAd baseAd, VungleError error) {
-                        Log.w(TAG, "Interstitial failed to play: " + error.getErrorMessage());
-                        resolveInterstitial(false);
-                        loadInterstitial();
-                    }
-
-                    @Override
-                    public void onAdLeftApplication(BaseAd baseAd) {}
-                });
-                interstitialAd.load();
-            } catch (Exception e) {
-                Log.w(TAG, "loadInterstitial failed", e);
-            }
-        });
-    }
-
-    private void resolveInterstitial(boolean shown) {
-        if (pendingInterstitialCall != null) {
-            JSObject ret = new JSObject();
-            ret.put("shown", shown);
-            pendingInterstitialCall.resolve(ret);
-            pendingInterstitialCall = null;
-        }
     }
 
     // ===================== Amazon IAP listener =============================
@@ -220,7 +105,7 @@ public class MonetizationPlugin extends Plugin {
                     resolvePurchase(true);
                     break;
                 case ALREADY_PURCHASED:
-                    adsRemoved = true;
+                    supporter = true;
                     resolvePurchase(true);
                     break;
                 case FAILED:
@@ -236,8 +121,8 @@ public class MonetizationPlugin extends Plugin {
         public void onPurchaseUpdatesResponse(PurchaseUpdatesResponse response) {
             if (response.getRequestStatus() == PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL) {
                 for (Receipt receipt : response.getReceipts()) {
-                    if (!receipt.isCanceled() && REMOVE_ADS_SKU.equals(receipt.getSku())) {
-                        adsRemoved = true;
+                    if (!receipt.isCanceled() && SUPPORTER_SKU.equals(receipt.getSku())) {
+                        supporter = true;
                         PurchasingService.notifyFulfillment(
                             receipt.getReceiptId(), FulfillmentResult.FULFILLED);
                     }
@@ -253,8 +138,8 @@ public class MonetizationPlugin extends Plugin {
     };
 
     private void grantEntitlement(Receipt receipt) {
-        if (receipt != null && REMOVE_ADS_SKU.equals(receipt.getSku())) {
-            adsRemoved = true;
+        if (receipt != null && SUPPORTER_SKU.equals(receipt.getSku())) {
+            supporter = true;
             PurchasingService.notifyFulfillment(
                 receipt.getReceiptId(), FulfillmentResult.FULFILLED);
         }
@@ -272,7 +157,7 @@ public class MonetizationPlugin extends Plugin {
     private void resolveRestore() {
         if (pendingRestoreCall != null) {
             JSObject ret = new JSObject();
-            ret.put("adsRemoved", adsRemoved);
+            ret.put("supporter", supporter);
             pendingRestoreCall.resolve(ret);
             pendingRestoreCall = null;
         }

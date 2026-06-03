@@ -1,9 +1,9 @@
 {
-  "com.midnightcartographer.game.remove_ads": {
+  "com.midnightcartographer.game.supporter": {
     "itemType": "ENTITLED",
     "price": 2.99,
-    "title": "Remove Ads",
-    "description": "Removes all interstitial ads, forever. Thank you for supporting the shop!",
+    "title": "Tip the Owl",
+    "description": "A one-time tip to support the shop. Thank you, friend!",
     "smallIconUrl": "https://www.amazon.com/some-icon.png"
   }
 }

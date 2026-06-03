@@ -1,6 +1,7 @@
 <!--
-  AndroidManifest additions for Vungle ads + Amazon IAP.
+  AndroidManifest additions for the Amazon IAP "Tip the Owl" purchase.
   Merge these into android/app/src/main/AndroidManifest.xml.
+  (The game is free with no ads, so there are no ad-SDK entries.)
 -->
 
 <!-- 1. Permissions: place these as direct children of <manifest>, before <application>. -->
@@ -19,9 +20,3 @@
         <action android:name="com.amazon.inapp.purchasing.NOTIFY" />
     </intent-filter>
 </receiver>
-
-<!--
-  NOTE: Vungle needs no manifest activity/receiver entries — its AAR merges
-  everything it needs automatically. No Amazon AdActivity anymore (that SDK
-  is retired).
--->

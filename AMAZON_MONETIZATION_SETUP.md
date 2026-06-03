@@ -1,16 +1,16 @@
-# Amazon Monetization Setup — Ads + "Remove Ads" IAP
+# Amazon Monetization Setup — Free + optional "Tip the Owl" IAP
 
-This game shows an **interstitial ad between nights** and offers a one-time
-**"Remove Ads"** in-app purchase. The TypeScript side is already wired up; this
-guide covers the native Android integration needed before you ship to the
-**Amazon Appstore**.
+The game is **free with no ads**. Players can optionally make a one-time
+**"Tip the Owl"** purchase to support the developer, which grants a permanent
+"supporter" entitlement (a small thank-you state in the UI). The TypeScript
+side is already wired up; this guide covers the native Android integration
+needed before you ship to the **Amazon Appstore**.
 
-> **Why Vungle for ads?** Amazon **retired its own Mobile Ads SDK**, and AdMob
-> won't serve on Fire tablets (no Google Play Services). Amazon's docs list the
-> third-party networks that work on Fire OS (AdColony, Vungle, Chartboost,
-> Mintegral, APS). We use **Vungle (Liftoff)** — it's on Maven Central (no jar
-> download) and has a clean interstitial API. The **Remove Ads** purchase uses
-> the **Amazon Appstore SDK** (in-app purchasing), which works on Fire OS.
+> **Why no ads?** Amazon **retired its own Mobile Ads SDK**, and standalone
+> third-party ad networks (Vungle, AdColony, etc.) gate signup behind Google
+> Play / Apple Store URLs that an Amazon-exclusive app can't provide. APS is
+> bidding-only and needs a separate primary ad server. So v1 ships free with an
+> optional tip; an ad network can be added later if the app goes multi-store.
 
 ---
 
@@ -18,16 +18,15 @@ guide covers the native Android integration needed before you ship to the
 
 | Layer | File | Role |
 |-------|------|------|
-| UI | `src/components/RemoveAdsButton.tsx` | Buy / restore buttons (title + upgrade shop) |
+| UI | `src/components/TipButton.tsx` | Tip / restore buttons (title + upgrade shop) |
 | Bridge | `src/services/monetization.ts` | Calls the native plugin; web fallback |
-| Native | `native/android/MonetizationPlugin.java` | Vungle ads + Amazon IAP |
+| Native | `native/android/MonetizationPlugin.java` | Amazon IAP (supporter entitlement) |
 | Test data | `native/android/amazon.sdktester.json` | Local IAP testing config |
 
-The remove-ads entitlement is cached in `localStorage` (`mc_ads_removed`) and
+The supporter entitlement is cached in `localStorage` (`mc_supporter`) and
 re-synced from Amazon on every launch via `initialize()` → `getEntitlements()`.
-`showInterstitialIfNeeded()` is a no-op once the entitlement is owned.
 
-**SKU:** `com.midnightcartographer.game.remove_ads` (must match in the JS
+**SKU:** `com.midnightcartographer.game.supporter` (must match in the JS
 service, the Java plugin, the tester JSON, and the Developer Console).
 
 ---
@@ -41,20 +40,14 @@ npx cap add android
 npm run cap:sync
 ```
 
-## 2. Get your ad + IAP credentials
+## 2. Add the Amazon IAP jar
 
-**Vungle (ads):**
-1. Create an account at [publisher.vungle.com](https://publisher.vungle.com).
-2. Add your app → note the **App ID**.
-3. Create an **Interstitial** placement → note the **Placement ID**.
-
-**Amazon Appstore SDK (IAP):**
-1. Download the **Amazon Appstore SDK** (In-App Purchasing) from the
-   [Amazon Developer Portal](https://developer.amazon.com/).
+1. Download the **Appstore SDK** (In-App Purchasing) from the Amazon Developer
+   portal: **Monetization → Appstore SDK → Get started** (it contains the IAP
+   JAR file).
 2. Copy the single `in-app-purchasing-3.0.x.jar` into `android/app/libs/`.
 
-> Vungle is pulled from **Maven Central** by Gradle (step 4) — there is **no
-> ad jar to download**. Only the one Amazon IAP jar goes in `libs/`.
+> This is the only jar you download. No ad SDK is used.
 
 ## 3. Copy the native sources into the project
 
@@ -65,39 +58,30 @@ into the right package folder):
 bash native/android/integrate.sh
 ```
 
-Then set your **Vungle App ID + Placement ID** near the top of
-`android/app/src/main/java/com/midnightcartographer/game/MonetizationPlugin.java`:
-
-```java
-private static final String VUNGLE_APP_ID = "YOUR_VUNGLE_APP_ID";
-private static final String VUNGLE_PLACEMENT_ID = "YOUR_VUNGLE_INTERSTITIAL_PLACEMENT_ID";
-```
-
-> ⚠️ Once the plugin is in place the build will **fail to compile** until both
-> the Vungle Gradle dependency (step 4) and the Amazon IAP jar (step 2) are
-> present, because it imports `com.vungle.ads.*` and `com.amazon.device.*`.
+> ⚠️ Once the plugin is in place the build will **fail to compile** until the
+> Amazon IAP jar (step 2) is present, because it imports `com.amazon.device.*`.
+> Do steps 2 and 3 together.
 
 ## 4. Apply the Gradle additions
 
 Edit `android/app/build.gradle` per
 [`native/android/build.gradle.additions.md`](native/android/build.gradle.additions.md)
-— this adds the **Vungle Maven dependency**, the `libs/` jar dependency, **and**
-the release signing config.
+— this adds the `libs/` jar dependency **and** the release signing config.
 
 ## 5. Merge the AndroidManifest additions
 
 Merge [`native/android/AndroidManifest.additions.xml`](native/android/AndroidManifest.additions.xml)
 into `android/app/src/main/AndroidManifest.xml` — internet permissions and the
-Amazon IAP `ResponseReceiver`. (Vungle needs no manifest entries; its AAR
-merges them automatically.)
+Amazon IAP `ResponseReceiver`.
 
 ## 6. Create the SKU in the Developer Console
 
 1. Go to **Amazon Developer Console → your app → In-App Items**.
 2. Add a **Consumable? No → Entitlement** item.
-3. **SKU:** `com.midnightcartographer.game.remove_ads`
-4. Set the title, description, and price (e.g. $2.99), then submit it with the
-   app (entitlements must be published with/before the build that uses them).
+3. **SKU:** `com.midnightcartographer.game.supporter`
+4. Set the title (e.g. "Tip the Owl"), description, and price (e.g. $2.99),
+   then submit it with the app (entitlements must be published with/before the
+   build that uses them).
 
 ---
 
@@ -137,8 +121,8 @@ cd android && ./gradlew bundleRelease
 # → android/app/build/outputs/bundle/release/app-release.aab
 ```
 
-Upload `app-release.aab` in the Amazon console, set **DRM → No** (free,
-ad-supported app), and submit.
+Upload `app-release.aab` in the Amazon console, set **DRM → No** (free app),
+and submit.
 
 ---
 
@@ -153,25 +137,18 @@ ad-supported app), and submit.
 
 3. Open App Tester → it loads the SKU above.
 4. Launch your app **through App Tester** and exercise:
-   - **Remove Ads** → purchase flow → ads stop, button shows "Ad-free".
-   - **Restore purchase** → re-grants entitlement on a fresh install.
-   - Finish a night → interstitial appears **only** when ads are not removed.
-
----
-
-## Testing ads
-
-Vungle has a **test mode** per placement — toggle it in the Vungle dashboard on
-your interstitial placement while developing, so it serves test creatives.
-**Turn it off before release.** No code change needed.
+   - **Tip the Owl** → purchase flow → button shows "Supporter — thank you".
+   - **Restore purchase** → re-grants the entitlement on a fresh install.
 
 ---
 
 ## Behaviour summary
 
-- **Interstitial trigger:** when the player taps *Begin Night N* from the
-  upgrade shop (`handleNextNight` in `GameScreen.tsx`).
-- **Gating:** `showInterstitialIfNeeded()` returns immediately if `adsRemoved`
-  is true or the platform is not native (web).
-- **Web/browser:** no native plugin → ads never show, and *Remove Ads*
-  simulates a purchase so you can preview the ad-free UI state.
+- **No ads.** The game is fully playable, start to finish, with no ad breaks.
+- **Tip button:** appears on the title screen and at the bottom of the upgrade
+  shop. Purchasing grants a permanent "supporter" thank-you state.
+- **Supporter perk:** supporters can flip back through previously-seen clues
+  during a contract (a "← Previous" button in the customer panel). Non-supporters
+  see a gentle "🔒 Tip the Owl to revisit earlier clues" hint instead.
+- **Web/browser:** no native plugin → *Tip the Owl* simulates a successful
+  purchase so you can preview the supporter UI state and the clue-review perk.

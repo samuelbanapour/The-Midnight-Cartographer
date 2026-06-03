@@ -1,5 +1,5 @@
 import type { ShopUpgrade } from '../game/types';
-import RemoveAdsButton from './RemoveAdsButton';
+import TipButton from './TipButton';
 
 interface UpgradeShopProps {
   upgrades: ShopUpgrade[];
@@ -156,7 +156,7 @@ export default function UpgradeShop({ upgrades, gold, day, onBuy, onNextNight }:
         Begin Night {day} 🌙
       </button>
 
-      <RemoveAdsButton compact />
+      <TipButton compact />
     </div>
   );
 }

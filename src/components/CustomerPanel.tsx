@@ -6,6 +6,9 @@ interface CustomerPanelProps {
   clueIndex: number;
   hasExtraClue: boolean;
   onNextClue: () => void;
+  onPrevClue: () => void;
+  /** Supporters can flip back through clues they've already seen. */
+  canReviewClues: boolean;
   onBeginMapping: () => void;
   allCluesSeen: boolean;
 }
@@ -15,6 +18,8 @@ export default function CustomerPanel({
   clueIndex,
   hasExtraClue,
   onNextClue,
+  onPrevClue,
+  canReviewClues,
   onBeginMapping,
   allCluesSeen,
 }: CustomerPanelProps) {
@@ -160,8 +165,33 @@ export default function CustomerPanel({
         </div>
       </div>
 
+      {/* Clue-review hint for non-supporters (only once they're past clue 1) */}
+      {!canReviewClues && clueIndex > 0 && (
+        <div
+          style={{
+            fontFamily: 'Kalam, cursive',
+            fontSize: '0.7rem',
+            color: '#5a4530',
+            textAlign: 'center',
+          }}
+        >
+          🔒 Tip the Owl to revisit earlier clues
+        </div>
+      )}
+
       {/* Actions */}
       <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+        {canReviewClues && clueIndex > 0 && (
+          <button
+            className="btn-ghost"
+            style={{ flex: 1 }}
+            onClick={onPrevClue}
+            disabled={isTyping}
+            title="Re-read the previous clue"
+          >
+            ← Previous
+          </button>
+        )}
         {!isLastClue && (
           <button
             className="btn-ghost"

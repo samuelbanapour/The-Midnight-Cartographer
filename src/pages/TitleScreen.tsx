@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import RemoveAdsButton from '../components/RemoveAdsButton';
+import TipButton from '../components/TipButton';
 
 interface TitleScreenProps {
   onStart: (fresh: boolean) => void;
@@ -178,7 +178,7 @@ export default function TitleScreen({ onStart, hasSave }: TitleScreenProps) {
               Continue Journey
             </button>
           )}
-          <RemoveAdsButton />
+          <TipButton />
         </div>
 
         {/* Flavour text */}
