@@ -11,6 +11,7 @@ import {
   saveGame,
 } from '../game/engine';
 import { WORLD_REGIONS } from '../game/worldMap';
+import { showInterstitialIfNeeded } from '../services/monetization';
 import MapGrid from '../components/MapGrid';
 import TileSelector from '../components/TileSelector';
 import CustomerPanel from '../components/CustomerPanel';
@@ -233,6 +234,8 @@ export default function GameScreen({ state, onStateChange }: GameScreenProps) {
       onStateChange({ ...state, phase: 'game_over' });
       return;
     }
+    // Show an interstitial at the night break (no-op if ads were removed).
+    void showInterstitialIfNeeded();
     const nextDay = state.day + 1;
     const queue = buildQueue(nextDay);
     const firstCustomer = queue[0]!;
