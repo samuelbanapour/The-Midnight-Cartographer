@@ -23,9 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
-# Capacitor generated folders
-android/
-ios/
+# Capacitor generated folders (root only — keeps native/android source tracked)
+/android/
+/ios/
 
 # Environment
 .env
