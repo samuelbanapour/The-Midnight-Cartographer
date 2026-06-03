@@ -1,0 +1,9 @@
+{
+  "com.midnightcartographer.game.remove_ads": {
+    "itemType": "ENTITLED",
+    "price": 2.99,
+    "title": "Remove Ads",
+    "description": "Removes all interstitial ads, forever. Thank you for supporting the shop!",
+    "smallIconUrl": "https://www.amazon.com/some-icon.png"
+  }
+}
