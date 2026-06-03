@@ -1,0 +1,8 @@
+# Copy to android/key.properties and fill in your real values.
+# NEVER commit the real key.properties or the .jks keystore — keep them private.
+# (android/ is already git-ignored, but double-check before sharing the repo.)
+
+storeFile=../keystore/midnight-release.jks
+storePassword=CHANGE_ME
+keyAlias=midnight
+keyPassword=CHANGE_ME

@@ -1,0 +1,26 @@
+<!--
+  AndroidManifest additions for Amazon Mobile Ads + IAP.
+  Merge these into android/app/src/main/AndroidManifest.xml.
+-->
+
+<!-- 1. Permissions: place these as direct children of <manifest>, before <application>. -->
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+<!-- 2. Amazon Mobile Ads activity: place this INSIDE the <application> element. -->
+<activity
+    android:name="com.amazon.device.ads.AdActivity"
+    android:configChanges="keyboardHidden|orientation|screenSize" />
+
+<!--
+  3. Amazon IAP ResponseReceiver: also INSIDE <application>.
+     Required so PurchasingService can deliver purchase/response broadcasts.
+-->
+<receiver
+    android:name="com.amazon.device.iap.ResponseReceiver"
+    android:exported="true"
+    android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY">
+    <intent-filter>
+        <action android:name="com.amazon.inapp.purchasing.NOTIFY" />
+    </intent-filter>
+</receiver>

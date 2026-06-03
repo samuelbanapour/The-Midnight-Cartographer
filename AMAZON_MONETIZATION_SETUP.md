@@ -53,54 +53,37 @@ npm run cap:sync
    }
    ```
 
-## 3. Copy the plugin into the project
+## 3. Copy the native sources into the project
 
-Copy the plugin to match its package path:
+Run the helper script (copies `MonetizationPlugin.java` **and** `MainActivity.java`
+into the right package folder):
 
+```bash
+bash native/android/integrate.sh
 ```
-native/android/MonetizationPlugin.java
-  → android/app/src/main/java/com/midnightcartographer/game/MonetizationPlugin.java
-```
 
-Then set your **Amazon Mobile Ads Application Key** at the top of the file:
+Then set your **Amazon Mobile Ads Application Key** near the top of
+`android/app/src/main/java/com/midnightcartographer/game/MonetizationPlugin.java`:
 
 ```java
 private static final String AMAZON_ADS_APP_KEY = "YOUR_AMAZON_ADS_APP_KEY";
 ```
 
-## 4. Register the plugin in MainActivity
+> ⚠️ Once the plugin is in place the build will **fail to compile** until the
+> Amazon jars (step 2) are present, because it imports `com.amazon.device.*`.
+> Do steps 2 and 3 together.
 
-Edit `android/app/src/main/java/com/midnightcartographer/game/MainActivity.java`:
+## 4. Apply the Gradle additions
 
-```java
-import com.getcapacitor.BridgeActivity;
-import android.os.Bundle;
+Edit `android/app/build.gradle` per
+[`native/android/build.gradle.additions.md`](native/android/build.gradle.additions.md)
+— this adds the `libs/` jar dependency **and** the release signing config.
 
-public class MainActivity extends BridgeActivity {
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        registerPlugin(MonetizationPlugin.class);
-        super.onCreate(savedInstanceState);
-    }
-}
-```
+## 5. Merge the AndroidManifest additions
 
-## 5. AndroidManifest permissions
-
-In `android/app/src/main/AndroidManifest.xml`, inside `<manifest>`:
-
-```xml
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-```
-
-And inside `<application>` add the Amazon Ads activity (per the Mobile Ads SDK docs):
-
-```xml
-<activity
-    android:name="com.amazon.device.ads.AdActivity"
-    android:configChanges="keyboardHidden|orientation|screenSize" />
-```
+Merge [`native/android/AndroidManifest.additions.xml`](native/android/AndroidManifest.additions.xml)
+into `android/app/src/main/AndroidManifest.xml` — internet permissions, the
+Amazon Ads `AdActivity`, and the Amazon IAP `ResponseReceiver`.
 
 ## 6. Create the SKU in the Developer Console
 
@@ -109,6 +92,47 @@ And inside `<application>` add the Amazon Ads activity (per the Mobile Ads SDK d
 3. **SKU:** `com.midnightcartographer.game.remove_ads`
 4. Set the title, description, and price (e.g. $2.99), then submit it with the
    app (entitlements must be published with/before the build that uses them).
+
+---
+
+## Build a signed release AAB
+
+The Amazon Appstore rejects debug builds (`app-debug.aab`). Ship a **signed
+release** bundle.
+
+### One-time: create a keystore
+
+```bash
+mkdir -p android/keystore
+keytool -genkey -v \
+  -keystore android/keystore/midnight-release.jks \
+  -alias midnight -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Keep the `.jks` file and passwords safe — you must reuse the **same** keystore
+for every future update, or Amazon will reject the upload.
+
+### One-time: point Gradle at the keystore
+
+```bash
+cp native/android/key.properties.example android/key.properties
+# then edit android/key.properties with your real store/key passwords
+```
+
+`android/` is git-ignored, so the keystore and `key.properties` stay out of the
+repo. Keep your own private backup of both.
+
+### Every build
+
+```bash
+npm run build          # rebuild web assets into dist/
+npm run cap:sync       # copy dist/ + plugins into android/
+cd android && ./gradlew bundleRelease
+# → android/app/build/outputs/bundle/release/app-release.aab
+```
+
+Upload `app-release.aab` in the Amazon console, set **DRM → No** (free,
+ad-supported app), and submit.
 
 ---
 
