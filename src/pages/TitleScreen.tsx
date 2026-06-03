@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import RemoveAdsButton from '../components/RemoveAdsButton';
 
 interface TitleScreenProps {
   onStart: (fresh: boolean) => void;
@@ -103,7 +104,7 @@ export default function TitleScreen({ onStart, hasSave }: TitleScreenProps) {
             animation: 'float 4s ease-in-out infinite, candleFlicker 3s ease-in-out infinite',
           }}
         >
-          🦩
+          🦉
         </div>
 
         {/* Title */}
@@ -177,6 +178,7 @@ export default function TitleScreen({ onStart, hasSave }: TitleScreenProps) {
               Continue Journey
             </button>
           )}
+          <RemoveAdsButton />
         </div>
 
         {/* Flavour text */}

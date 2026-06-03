@@ -1,4 +1,5 @@
 import type { ShopUpgrade } from '../game/types';
+import RemoveAdsButton from './RemoveAdsButton';
 
 interface UpgradeShopProps {
   upgrades: ShopUpgrade[];
@@ -23,7 +24,7 @@ export default function UpgradeShop({ upgrades, gold, day, onBuy, onNextNight }:
     >
       {/* Header */}
       <div style={{ textAlign: 'center', animation: 'fadeIn 0.4s ease-out' }}>
-        <div style={{ fontSize: '36px', marginBottom: '6px' }}>🦩</div>
+        <div style={{ fontSize: '36px', marginBottom: '6px' }}>🦉</div>
         <h2
           style={{
             fontFamily: 'Spectral, serif',
@@ -154,6 +155,8 @@ export default function UpgradeShop({ upgrades, gold, day, onBuy, onNextNight }:
       >
         Begin Night {day} 🌙
       </button>
+
+      <RemoveAdsButton compact />
     </div>
   );
 }
