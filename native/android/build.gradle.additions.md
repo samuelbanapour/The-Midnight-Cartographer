@@ -14,7 +14,7 @@ if (keystorePropertiesFile.exists()) {
 }
 ```
 
-## 2. Signing config + bundle Amazon jars (inside `android { … }`)
+## 2. Signing config (inside `android { … }`)
 
 ```gradle
 android {
@@ -41,20 +41,30 @@ android {
 }
 ```
 
-## 3. Dependencies — pick up the Amazon jars from `libs/`
-
-In the `dependencies { … }` block (Capacitor already adds a `flatDir` for `libs`):
+## 3. Dependencies
 
 ```gradle
 dependencies {
+    // Vungle (Liftoff) ads — resolved from Maven Central, no jar download needed.
+    implementation 'com.vungle:vungle-ads:7.4.1'
+
+    // Amazon Appstore SDK (IAP) — the one jar you still download from the
+    // Amazon developer portal. Drop it in android/app/libs/.
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+
     // ...existing Capacitor / AndroidX deps...
 }
 ```
 
-Put the downloaded SDK files in `android/app/libs/`:
+`mavenCentral()` is already in the Capacitor-generated root `build.gradle`, so the
+Vungle line resolves with no extra repository config.
+
+Put the one downloaded jar in `android/app/libs/`:
 
 ```
 android/app/libs/in-app-purchasing-3.0.x.jar      # Amazon Appstore SDK (IAP)
-android/app/libs/amazon-ads-x.y.z.jar             # Amazon Mobile Ads SDK
 ```
+
+> The Amazon **Mobile Ads SDK no longer exists** — Amazon retired it. Ads on Fire
+> tablets now come from third-party networks; we use Vungle. There is no
+> `amazon-ads-*.jar` to download anymore.

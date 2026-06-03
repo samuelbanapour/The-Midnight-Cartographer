@@ -1,19 +1,18 @@
 package com.midnightcartographer.game;
 
 // ---------------------------------------------------------------------------
-// MonetizationPlugin — Amazon Mobile Ads (interstitial) + Amazon IAP (remove ads)
+// MonetizationPlugin — Vungle (Liftoff) interstitials + Amazon IAP (remove ads)
 // ---------------------------------------------------------------------------
 // Copy this file into your generated Android project after `npx cap add android`:
 //   android/app/src/main/java/com/midnightcartographer/game/MonetizationPlugin.java
 // and register it in MainActivity (see AMAZON_MONETIZATION_SETUP.md).
 //
-// Requires the Amazon Appstore SDK (in-app-purchasing) and the Amazon Mobile
-// Ads SDK on the classpath. Setup steps are in AMAZON_MONETIZATION_SETUP.md.
+// Ads:  Vungle Ads SDK (Maven Central — no jar download). Fire-tablet compatible.
+// IAP:  Amazon Appstore SDK (in-app-purchasing) for the Remove Ads entitlement.
+// Setup steps are in AMAZON_MONETIZATION_SETUP.md.
 // ---------------------------------------------------------------------------
 
 import android.util.Log;
-
-import androidx.annotation.NonNull;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -31,14 +30,13 @@ import com.amazon.device.iap.model.PurchaseUpdatesResponse;
 import com.amazon.device.iap.model.Receipt;
 import com.amazon.device.iap.model.UserDataResponse;
 
-// --- Amazon Mobile Ads --------------------------------------------------------
-import com.amazon.device.ads.AdError;
-import com.amazon.device.ads.AdRegistration;
-import com.amazon.device.ads.InterstitialAd;
-import com.amazon.device.ads.DefaultAdListener;
-
-import java.util.HashSet;
-import java.util.Set;
+// --- Vungle (Liftoff) Ads -----------------------------------------------------
+import com.vungle.ads.BaseAd;
+import com.vungle.ads.InitializationListener;
+import com.vungle.ads.InterstitialAd;
+import com.vungle.ads.InterstitialAdListener;
+import com.vungle.ads.VungleAds;
+import com.vungle.ads.VungleError;
 
 @CapacitorPlugin(name = "Monetization")
 public class MonetizationPlugin extends Plugin {
@@ -48,13 +46,15 @@ public class MonetizationPlugin extends Plugin {
     // The SKU you create in the Amazon Developer Console (must match the JS side).
     private static final String REMOVE_ADS_SKU = "com.midnightcartographer.game.remove_ads";
 
-    // Get your Application Key from the Amazon Mobile Ads dashboard.
-    private static final String AMAZON_ADS_APP_KEY = "YOUR_AMAZON_ADS_APP_KEY";
+    // From the Vungle/Liftoff dashboard (https://publisher.vungle.com).
+    private static final String VUNGLE_APP_ID = "YOUR_VUNGLE_APP_ID";
+    private static final String VUNGLE_PLACEMENT_ID = "YOUR_VUNGLE_INTERSTITIAL_PLACEMENT_ID";
 
     private boolean adsRemoved = false;
+    private boolean adsInitialized = false;
     private InterstitialAd interstitialAd;
 
-    // Outstanding calls awaiting an async Amazon callback.
+    // Outstanding calls awaiting an async callback.
     private PluginCall pendingPurchaseCall;
     private PluginCall pendingRestoreCall;
     private PluginCall pendingInterstitialCall;
@@ -63,13 +63,22 @@ public class MonetizationPlugin extends Plugin {
     public void load() {
         super.load();
 
-        // --- Initialise Amazon Mobile Ads ---
+        // --- Initialise Vungle Ads ---
         try {
-            AdRegistration.getInstance(AMAZON_ADS_APP_KEY, getContext());
-            AdRegistration.enableLogging(true);
-            // AdRegistration.enableTesting(true); // uncomment while developing
+            VungleAds.init(getContext(), VUNGLE_APP_ID, new InitializationListener() {
+                @Override
+                public void onSuccess() {
+                    adsInitialized = true;
+                    loadInterstitial(); // preload the first one
+                }
+
+                @Override
+                public void onError(VungleError error) {
+                    Log.w(TAG, "Vungle init failed: " + error.getErrorMessage());
+                }
+            });
         } catch (Exception e) {
-            Log.w(TAG, "Amazon Ads init failed", e);
+            Log.w(TAG, "Vungle init threw", e);
         }
 
         // --- Register the IAP listener ---
@@ -83,7 +92,9 @@ public class MonetizationPlugin extends Plugin {
         // Sync user + entitlements, then preload an interstitial.
         PurchasingService.getUserData();
         PurchasingService.getPurchaseUpdates(true);
-        loadInterstitial();
+        if (adsInitialized) {
+            loadInterstitial();
+        }
         call.resolve();
     }
 
@@ -104,13 +115,10 @@ public class MonetizationPlugin extends Plugin {
         }
         pendingInterstitialCall = call;
         getActivity().runOnUiThread(() -> {
-            if (interstitialAd != null) {
-                boolean showing = interstitialAd.showAd();
-                if (!showing) {
-                    resolveInterstitial(false);
-                    loadInterstitial();
-                }
+            if (interstitialAd != null && interstitialAd.canPlayAd()) {
+                interstitialAd.play(getContext());
             } else {
+                // Not ready yet — resolve gracefully and start loading the next one.
                 resolveInterstitial(false);
                 loadInterstitial();
             }
@@ -130,25 +138,50 @@ public class MonetizationPlugin extends Plugin {
         PurchasingService.getPurchaseUpdates(true);
     }
 
-    // ===================== Amazon Mobile Ads ===============================
+    // ===================== Vungle Ads ======================================
 
     private void loadInterstitial() {
+        if (!adsInitialized || adsRemoved) return;
         getActivity().runOnUiThread(() -> {
             try {
-                interstitialAd = new InterstitialAd(getActivity());
-                interstitialAd.setListener(new DefaultAdListener() {
+                interstitialAd = new InterstitialAd(getContext(), VUNGLE_PLACEMENT_ID, new com.vungle.ads.AdConfig());
+                interstitialAd.setAdListener(new InterstitialAdListener() {
                     @Override
-                    public void onAdDismissed(com.amazon.device.ads.Ad ad) {
+                    public void onAdLoaded(BaseAd baseAd) {
+                        // Ready to show.
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(BaseAd baseAd, VungleError error) {
+                        Log.w(TAG, "Interstitial failed to load: " + error.getErrorMessage());
+                    }
+
+                    @Override
+                    public void onAdStart(BaseAd baseAd) {}
+
+                    @Override
+                    public void onAdImpression(BaseAd baseAd) {}
+
+                    @Override
+                    public void onAdClicked(BaseAd baseAd) {}
+
+                    @Override
+                    public void onAdEnd(BaseAd baseAd) {
                         resolveInterstitial(true);
                         loadInterstitial(); // preload the next one
                     }
 
                     @Override
-                    public void onAdFailedToLoad(com.amazon.device.ads.Ad ad, AdError error) {
-                        Log.w(TAG, "Interstitial failed: " + error.getMessage());
+                    public void onAdFailedToPlay(BaseAd baseAd, VungleError error) {
+                        Log.w(TAG, "Interstitial failed to play: " + error.getErrorMessage());
+                        resolveInterstitial(false);
+                        loadInterstitial();
                     }
+
+                    @Override
+                    public void onAdLeftApplication(BaseAd baseAd) {}
                 });
-                interstitialAd.loadAd();
+                interstitialAd.load();
             } catch (Exception e) {
                 Log.w(TAG, "loadInterstitial failed", e);
             }

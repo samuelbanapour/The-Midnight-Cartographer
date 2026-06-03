@@ -1,5 +1,5 @@
 <!--
-  AndroidManifest additions for Amazon Mobile Ads + IAP.
+  AndroidManifest additions for Vungle ads + Amazon IAP.
   Merge these into android/app/src/main/AndroidManifest.xml.
 -->
 
@@ -7,13 +7,8 @@
 <uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-<!-- 2. Amazon Mobile Ads activity: place this INSIDE the <application> element. -->
-<activity
-    android:name="com.amazon.device.ads.AdActivity"
-    android:configChanges="keyboardHidden|orientation|screenSize" />
-
 <!--
-  3. Amazon IAP ResponseReceiver: also INSIDE <application>.
+  2. Amazon IAP ResponseReceiver: place this INSIDE the <application> element.
      Required so PurchasingService can deliver purchase/response broadcasts.
 -->
 <receiver
@@ -24,3 +19,9 @@
         <action android:name="com.amazon.inapp.purchasing.NOTIFY" />
     </intent-filter>
 </receiver>
+
+<!--
+  NOTE: Vungle needs no manifest activity/receiver entries — its AAR merges
+  everything it needs automatically. No Amazon AdActivity anymore (that SDK
+  is retired).
+-->

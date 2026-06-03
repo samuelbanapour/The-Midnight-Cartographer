@@ -6,7 +6,8 @@
 #   bash native/android/integrate.sh
 #
 # It only handles the file copies that are mechanical. You still must:
-#   - drop the Amazon SDK jars into android/app/libs/
+#   - set VUNGLE_APP_ID + VUNGLE_PLACEMENT_ID in the copied MonetizationPlugin.java
+#   - drop the Amazon IAP jar into android/app/libs/ (Vungle comes from Maven)
 #   - apply build.gradle.additions.md and AndroidManifest.additions.xml
 #   - create android/key.properties (see key.properties.example)
 #   - create the remove_ads SKU in the Amazon Developer Console
@@ -30,7 +31,8 @@ cp "$HERE/MainActivity.java"       "$PKG_DIR/MainActivity.java"
 echo "✓ Copied MonetizationPlugin.java + MainActivity.java -> $PKG_DIR"
 echo ""
 echo "Remaining manual steps:"
-echo "  1. Put Amazon SDK jars in android/app/libs/"
+echo "  0. Set VUNGLE_APP_ID + VUNGLE_PLACEMENT_ID in the copied MonetizationPlugin.java"
+echo "  1. Put the Amazon IAP jar in android/app/libs/ (Vungle is pulled from Maven)"
 echo "  2. Apply native/android/build.gradle.additions.md to android/app/build.gradle"
 echo "  3. Merge native/android/AndroidManifest.additions.xml into the app manifest"
 echo "  4. cp native/android/key.properties.example android/key.properties  (then edit)"

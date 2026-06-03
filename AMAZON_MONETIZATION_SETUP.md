@@ -5,9 +5,12 @@ This game shows an **interstitial ad between nights** and offers a one-time
 guide covers the native Android integration needed before you ship to the
 **Amazon Appstore**.
 
-> **Why not AdMob?** Amazon Fire tablets have no Google Play Services, so AdMob
-> won't serve there. We use the **Amazon Mobile Ads SDK** (interstitial) and the
-> **Amazon Appstore SDK** (in-app purchasing), both of which work on Fire OS.
+> **Why Vungle for ads?** Amazon **retired its own Mobile Ads SDK**, and AdMob
+> won't serve on Fire tablets (no Google Play Services). Amazon's docs list the
+> third-party networks that work on Fire OS (AdColony, Vungle, Chartboost,
+> Mintegral, APS). We use **Vungle (Liftoff)** — it's on Maven Central (no jar
+> download) and has a clean interstitial API. The **Remove Ads** purchase uses
+> the **Amazon Appstore SDK** (in-app purchasing), which works on Fire OS.
 
 ---
 
@@ -17,7 +20,7 @@ guide covers the native Android integration needed before you ship to the
 |-------|------|------|
 | UI | `src/components/RemoveAdsButton.tsx` | Buy / restore buttons (title + upgrade shop) |
 | Bridge | `src/services/monetization.ts` | Calls the native plugin; web fallback |
-| Native | `native/android/MonetizationPlugin.java` | Amazon Ads + Amazon IAP |
+| Native | `native/android/MonetizationPlugin.java` | Vungle ads + Amazon IAP |
 | Test data | `native/android/amazon.sdktester.json` | Local IAP testing config |
 
 The remove-ads entitlement is cached in `localStorage` (`mc_ads_removed`) and
@@ -38,20 +41,20 @@ npx cap add android
 npm run cap:sync
 ```
 
-## 2. Add the Amazon SDK jars
+## 2. Get your ad + IAP credentials
 
-1. Download the **Amazon Appstore SDK** (In-App Purchasing) and the
-   **Amazon Mobile Ads SDK** from the
+**Vungle (ads):**
+1. Create an account at [publisher.vungle.com](https://publisher.vungle.com).
+2. Add your app → note the **App ID**.
+3. Create an **Interstitial** placement → note the **Placement ID**.
+
+**Amazon Appstore SDK (IAP):**
+1. Download the **Amazon Appstore SDK** (In-App Purchasing) from the
    [Amazon Developer Portal](https://developer.amazon.com/).
-2. Copy the `.jar`/`.aar` files into `android/app/libs/`.
-3. In `android/app/build.gradle`, ensure:
+2. Copy the single `in-app-purchasing-3.0.x.jar` into `android/app/libs/`.
 
-   ```gradle
-   dependencies {
-       implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
-       // ...existing Capacitor deps...
-   }
-   ```
+> Vungle is pulled from **Maven Central** by Gradle (step 4) — there is **no
+> ad jar to download**. Only the one Amazon IAP jar goes in `libs/`.
 
 ## 3. Copy the native sources into the project
 
@@ -62,28 +65,31 @@ into the right package folder):
 bash native/android/integrate.sh
 ```
 
-Then set your **Amazon Mobile Ads Application Key** near the top of
+Then set your **Vungle App ID + Placement ID** near the top of
 `android/app/src/main/java/com/midnightcartographer/game/MonetizationPlugin.java`:
 
 ```java
-private static final String AMAZON_ADS_APP_KEY = "YOUR_AMAZON_ADS_APP_KEY";
+private static final String VUNGLE_APP_ID = "YOUR_VUNGLE_APP_ID";
+private static final String VUNGLE_PLACEMENT_ID = "YOUR_VUNGLE_INTERSTITIAL_PLACEMENT_ID";
 ```
 
-> ⚠️ Once the plugin is in place the build will **fail to compile** until the
-> Amazon jars (step 2) are present, because it imports `com.amazon.device.*`.
-> Do steps 2 and 3 together.
+> ⚠️ Once the plugin is in place the build will **fail to compile** until both
+> the Vungle Gradle dependency (step 4) and the Amazon IAP jar (step 2) are
+> present, because it imports `com.vungle.ads.*` and `com.amazon.device.*`.
 
 ## 4. Apply the Gradle additions
 
 Edit `android/app/build.gradle` per
 [`native/android/build.gradle.additions.md`](native/android/build.gradle.additions.md)
-— this adds the `libs/` jar dependency **and** the release signing config.
+— this adds the **Vungle Maven dependency**, the `libs/` jar dependency, **and**
+the release signing config.
 
 ## 5. Merge the AndroidManifest additions
 
 Merge [`native/android/AndroidManifest.additions.xml`](native/android/AndroidManifest.additions.xml)
-into `android/app/src/main/AndroidManifest.xml` — internet permissions, the
-Amazon Ads `AdActivity`, and the Amazon IAP `ResponseReceiver`.
+into `android/app/src/main/AndroidManifest.xml` — internet permissions and the
+Amazon IAP `ResponseReceiver`. (Vungle needs no manifest entries; its AAR
+merges them automatically.)
 
 ## 6. Create the SKU in the Developer Console
 
@@ -155,13 +161,9 @@ ad-supported app), and submit.
 
 ## Testing ads
 
-While developing, uncomment in `MonetizationPlugin.java`:
-
-```java
-AdRegistration.enableTesting(true);
-```
-
-so the Mobile Ads SDK serves test creatives. **Remove this before release.**
+Vungle has a **test mode** per placement — toggle it in the Vungle dashboard on
+your interstitial placement while developing, so it serves test creatives.
+**Turn it off before release.** No code change needed.
 
 ---
 
