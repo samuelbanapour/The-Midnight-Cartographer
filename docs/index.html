@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Midnight Cartographer — A cozy cartography shop, open until dawn</title>
+<meta name="description" content="A cozy late-night cartography shop for Amazon Fire tablets. Serve adventurers, monsters, and mages — draw maps from memory and rumor. Free, no ads, fully offline." />
+<meta name="theme-color" content="#1a0e05" />
+
+<!-- Open Graph / social cards -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="The Midnight Cartographer" />
+<meta property="og:description" content="A cozy cartography shop. Open until dawn. Free on the Amazon Appstore — no ads, fully offline." />
+<meta property="og:image" content="social-card.svg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="The Midnight Cartographer" />
+<meta name="twitter:description" content="A cozy cartography shop. Open until dawn. Free on the Amazon Appstore." />
+<meta name="twitter:image" content="social-card.svg" />
+
+<link rel="icon" type="image/svg+xml" href="owl.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg: #1a0e05;
+    --surface: #241408;
+    --surface-2: #2e1a0a;
+    --amber: #d4a017;
+    --amber-dim: #a07810;
+    --brown: #8b5e3c;
+    --cream: #f5e6d0;
+    --cream-dim: #c4b49a;
+    --ink: #4a3020;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Spectral', serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  a { color: inherit; }
+
+  /* ---- rain ---- */
+  .rain { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .drop {
+    position: absolute; top: -120px; width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(212,160,23,0.35));
+    animation: fall linear infinite;
+  }
+  @keyframes fall { to { transform: translateY(120vh); } }
+
+  /* ---- layout ---- */
+  .wrap { position: relative; z-index: 1; max-width: 880px; margin: 0 auto; padding: 0 20px; }
+  section { padding: 64px 0; }
+
+  /* ---- hero ---- */
+  .hero { text-align: center; padding-top: 72px; }
+  .glow {
+    position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
+    width: 420px; height: 420px; max-width: 90vw; border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(212,160,23,0.14) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  .owl { width: 132px; height: 132px; margin: 0 auto 24px;
+    animation: float 4s ease-in-out infinite, flicker 3s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  @keyframes flicker { 0%,100%{opacity:1;} 30%{opacity:.93;} 60%{opacity:.97;} 80%{opacity:.91;} }
+
+  h1 {
+    font-weight: 700; letter-spacing: -0.01em; line-height: 1.1;
+    font-size: clamp(2.1rem, 7vw, 3.4rem); color: var(--amber);
+    text-shadow: 0 0 30px rgba(212,160,23,0.3);
+  }
+  .tagline { font-style: italic; font-size: clamp(1rem,3.5vw,1.3rem); color: var(--amber-dim); margin-top: 10px; }
+  .divider { width: 240px; max-width: 70%; height: 1px; margin: 30px auto;
+    background: linear-gradient(to right, transparent, var(--brown), transparent); }
+
+  /* ---- buttons ---- */
+  .cta-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: center; margin-top: 8px; }
+  .btn-amber {
+    font-family: 'Spectral', serif; font-size: 1.05rem; font-weight: 600;
+    padding: 0.85rem 1.8rem; border-radius: 12px; border: none; cursor: pointer;
+    background: linear-gradient(180deg, #e6b62a, var(--amber)); color: #1a0e05;
+    box-shadow: 0 6px 24px rgba(212,160,23,0.3); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 10px; transition: transform .15s, box-shadow .15s;
+  }
+  .btn-amber:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212,160,23,0.4); }
+  .btn-ghost {
+    font-family: 'Spectral', serif; font-size: 0.95rem; padding: 0.8rem 1.4rem;
+    border-radius: 12px; border: 1px solid var(--ink); background: transparent;
+    color: var(--cream-dim); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+    transition: border-color .15s, color .15s;
+  }
+  .btn-ghost:hover { border-color: var(--amber-dim); color: var(--cream); }
+
+  /* ---- countdown ---- */
+  .countdown { margin-top: 30px; }
+  .count-label { font-family: 'Kalam', cursive; font-size: 0.85rem; color: var(--brown); letter-spacing: 0.04em; }
+  .count-grid { display: flex; gap: 12px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+  .count-cell {
+    background: var(--surface); border: 1px solid var(--ink); border-radius: 12px;
+    padding: 12px 16px; min-width: 70px;
+  }
+  .count-num { font-size: 1.8rem; font-weight: 700; color: var(--amber); font-variant-numeric: tabular-nums; }
+  .count-unit { font-family: 'Kalam', cursive; font-size: 0.7rem; color: var(--cream-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 18px;
+    font-family: 'Kalam', cursive; color: #6db36b; font-size: 0.95rem;
+  }
+  .live-dot { width: 9px; height: 9px; border-radius: 50%; background: #6db36b; box-shadow: 0 0 10px #6db36b; }
+
+  /* ---- section headers ---- */
+  h2 { font-size: clamp(1.5rem, 4vw, 2rem); color: var(--amber); text-align: center; margin-bottom: 8px; }
+  .sub { text-align: center; color: var(--cream-dim); font-style: italic; margin-bottom: 36px; }
+
+  /* ---- features ---- */
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+  .feat {
+    background: var(--surface); border: 1px solid #3a2412; border-radius: 16px; padding: 22px;
+    transition: transform .15s, border-color .15s;
+  }
+  .feat:hover { transform: translateY(-3px); border-color: var(--amber-dim); }
+  .feat .ico { font-size: 1.8rem; margin-bottom: 10px; display: block; }
+  .feat h3 { color: var(--amber); font-size: 1.1rem; margin-bottom: 6px; font-weight: 600; }
+  .feat p { color: var(--cream-dim); font-size: 0.95rem; }
+
+  /* ---- band ---- */
+  .band { background: linear-gradient(180deg, transparent, rgba(36,20,8,0.6), transparent); }
+
+  /* ---- faq ---- */
+  details {
+    background: var(--surface); border: 1px solid #3a2412; border-radius: 12px;
+    padding: 16px 20px; margin-bottom: 12px; cursor: pointer;
+  }
+  details[open] { border-color: var(--amber-dim); }
+  summary { font-weight: 600; color: var(--cream); list-style: none; display: flex; justify-content: space-between; align-items: center; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '+'; color: var(--amber); font-size: 1.4rem; }
+  details[open] summary::after { content: '–'; }
+  details p { color: var(--cream-dim); margin-top: 12px; font-size: 0.95rem; }
+
+  /* ---- footer ---- */
+  footer { text-align: center; padding: 48px 20px; color: var(--ink); font-family: 'Kalam', cursive; font-size: 0.85rem; position: relative; z-index: 1; }
+  footer a { color: var(--amber-dim); text-decoration: none; }
+  footer a:hover { color: var(--amber); }
+</style>
+</head>
+<body>
+
+<div class="rain" id="rain"></div>
+
+<div class="glow"></div>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <section class="hero">
+    <img class="owl" src="owl.svg" alt="The Midnight Cartographer owl" width="132" height="132" />
+    <h1>The Midnight<br>Cartographer</h1>
+    <p class="tagline">A cozy cartography shop. Open until dawn.</p>
+    <div class="divider"></div>
+
+    <div class="cta-row">
+      <a class="btn-amber" id="getBtn" href="https://www.amazon.com/gp/mas/dl/android?p=com.midnightcartographer.game">
+        🦉 Get it on the Amazon Appstore
+      </a>
+      <a class="btn-ghost" href="#features">See what's inside ↓</a>
+    </div>
+
+    <div class="countdown" id="countdown">
+      <div class="count-label">Opens for the night in…</div>
+      <div class="count-grid" id="countGrid"></div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <h2>Maps drawn from memory and rumor</h2>
+    <p class="sub">A quiet ritual you can pick up and put down whenever you like.</p>
+    <div class="features">
+      <div class="feat"><span class="ico">🗺️</span><h3>Draw from clues</h3><p>Listen to adventurers' half-remembered directions and place tiles on a blank grid before the night is over.</p></div>
+      <div class="feat"><span class="ico">🛡️</span><h3>Six kinds of guest</h3><p>Knights, mages, merchants, rangers, bards — and the occasional monster with surprisingly good directions.</p></div>
+      <div class="feat"><span class="ico">🎯</span><h3>Accuracy matters</h3><p>The closer your map to the truth, the bigger the reward and the brighter your reputation in town.</p></div>
+      <div class="feat"><span class="ico">🕯️</span><h3>Cozy upgrades</h3><p>Spend gold between nights on enchanted ink, extra clues, warm decor, and a reputation shield.</p></div>
+      <div class="feat"><span class="ico">🌲</span><h3>Every terrain</h3><p>Forests, rivers, mountains, deserts, ruins, villages, dungeons, swamps, and the open sea.</p></div>
+      <div class="feat"><span class="ico">📖</span><h3>A quiet story</h3><p>Uncover fragments of lore one night at a time as the rain falls and regulars return to your desk.</p></div>
+      <div class="feat"><span class="ico">🌙</span><h3>No timers, no rush</h3><p>No fail states, no ads. Return whenever you want something gentle and unhurried.</p></div>
+      <div class="feat"><span class="ico">✈️</span><h3>Fully offline</h3><p>No account, no sign-in, no internet required. The shop is always open on your tablet.</p></div>
+    </div>
+  </section>
+
+  <!-- BAND / TIP -->
+  <section class="band">
+    <h2>Free, with no strings</h2>
+    <p class="sub">The whole game is free and ad-free. If you enjoy your nights, you can leave an optional tip.</p>
+    <div style="text-align:center; max-width:560px; margin:0 auto; color:var(--cream-dim);">
+      <p>Drop a coin in the jar with <strong style="color:var(--amber)">“Tip the Owl”</strong> — $1, $2.99, $5, or $10 — and you become a supporter. As a small thank-you, supporters can flip back through earlier clues mid-contract. That's the only difference. No paywalls, no pressure.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section>
+    <h2>Questions from the doorway</h2>
+    <p class="sub">&nbsp;</p>
+    <details><summary>What devices does it run on?</summary><p>The Midnight Cartographer is built for Amazon Fire tablets and available on the Amazon Appstore. It plays entirely offline once installed.</p></details>
+    <details><summary>How much does it cost?</summary><p>It's free. There's an optional “Tip the Owl” in-app purchase if you'd like to support development, but the full game is playable without spending anything.</p></details>
+    <details><summary>Are there ads?</summary><p>No ads, ever. No timers, no energy meters, no fail states either.</p></details>
+    <details><summary>Do I need an account or internet?</summary><p>No account and no sign-in. Internet is only used for the optional tip purchase and restore — the game itself runs fully offline.</p></details>
+    <details><summary>When does it launch?</summary><p>It goes live on the Amazon Appstore on June 8, 2026. The button above will take you straight to the listing once it's live.</p></details>
+  </section>
+
+</div>
+
+<footer>
+  Made with candlelight and rain. · <a href="https://www.amazon.com/gp/mas/dl/android?p=com.midnightcartographer.game">Amazon Appstore</a><br>
+  © 2026 The Midnight Cartographer
+</footer>
+
+<script>
+  // ---- rain ----
+  (function () {
+    const rain = document.getElementById('rain');
+    const N = 50;
+    for (let i = 0; i < N; i++) {
+      const d = document.createElement('div');
+      d.className = 'drop';
+      d.style.left = (Math.random() * 100) + '%';
+      d.style.height = (60 + Math.random() * 80) + 'px';
+      d.style.opacity = (0.15 + Math.random() * 0.35).toFixed(2);
+      d.style.animationDuration = (0.6 + Math.random() * 1.2).toFixed(2) + 's';
+      d.style.animationDelay = (Math.random() * 4).toFixed(2) + 's';
+      rain.appendChild(d);
+    }
+  })();
+
+  // ---- countdown to launch: Jun 8 2026 8:00 PM PDT (UTC-7) = 2026-06-09T03:00:00Z ----
+  (function () {
+    const LAUNCH = Date.UTC(2026, 5, 9, 3, 0, 0); // months are 0-indexed
+    const grid = document.getElementById('countGrid');
+    const cd = document.getElementById('countdown');
+    const getBtn = document.getElementById('getBtn');
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function render() {
+      const now = Date.now();
+      let diff = Math.floor((LAUNCH - now) / 1000);
+      if (diff <= 0) {
+        cd.innerHTML =
+          '<div class="live-badge"><span class="live-dot"></span> The shop is open — available now on the Amazon Appstore</div>';
+        getBtn.textContent = '🦉 Download now on the Amazon Appstore';
+        return true; // stop ticking
+      }
+      const days = Math.floor(diff / 86400); diff -= days * 86400;
+      const hrs = Math.floor(diff / 3600); diff -= hrs * 3600;
+      const mins = Math.floor(diff / 60);
+      const secs = diff - mins * 60;
+      const cells = [[days, 'days'], [pad(hrs), 'hours'], [pad(mins), 'min'], [pad(secs), 'sec']];
+      grid.innerHTML = cells.map(function (c) {
+        return '<div class="count-cell"><div class="count-num">' + c[0] +
+               '</div><div class="count-unit">' + c[1] + '</div></div>';
+      }).join('');
+      return false;
+    }
+
+    if (!render()) {
+      const t = setInterval(function () { if (render()) clearInterval(t); }, 1000);
+    }
+  })();
+</script>
+
+</body>
+</html>

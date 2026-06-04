@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Amber owl">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="42%" r="55%">
+      <stop offset="0%" stop-color="#d4a017" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#1a0e05" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="belly" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d4a017"/>
+      <stop offset="100%" stop-color="#a07810"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="#1a0e05"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+
+  <circle cx="256" cy="236" r="205" fill="none" stroke="#d4a017" stroke-width="6" opacity="0.85"/>
+
+  <polygon points="172,180 228,180 196,86" fill="#d4a017"/>
+  <polygon points="284,180 340,180 316,86" fill="#d4a017"/>
+
+  <ellipse cx="256" cy="226" rx="105" ry="110" fill="#d4a017"/>
+  <ellipse cx="256" cy="318" rx="90" ry="84" fill="#d4a017"/>
+  <ellipse cx="256" cy="326" rx="58" ry="60" fill="url(#belly)" opacity="0.5"/>
+
+  <ellipse cx="256" cy="223" rx="84" ry="82" fill="#dcae3a"/>
+
+  <g>
+    <circle cx="219" cy="210" r="34" fill="#1a0e05"/>
+    <circle cx="219" cy="210" r="27" fill="#f5e6d0"/>
+    <circle cx="219" cy="210" r="13" fill="#241408"/>
+    <circle cx="214" cy="205" r="4" fill="#f5e6d0"/>
+    <circle cx="293" cy="210" r="34" fill="#1a0e05"/>
+    <circle cx="293" cy="210" r="27" fill="#f5e6d0"/>
+    <circle cx="293" cy="210" r="13" fill="#241408"/>
+    <circle cx="288" cy="205" r="4" fill="#f5e6d0"/>
+  </g>
+
+  <polygon points="243,242 269,242 256,270" fill="#a07810"/>
+
+  <path d="M 196 280 Q 176 330 196 374" fill="none" stroke="#9c7714" stroke-width="5" stroke-linecap="round"/>
+  <path d="M 316 280 Q 336 330 316 374" fill="none" stroke="#9c7714" stroke-width="5" stroke-linecap="round"/>
+
+  <path d="M 234 398 l 0 14 m -10 0 l 10 0 m 0 0 l 10 0" stroke="#a07810" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <path d="M 278 398 l 0 14 m -10 0 l 10 0 m 0 0 l 10 0" stroke="#a07810" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg>
