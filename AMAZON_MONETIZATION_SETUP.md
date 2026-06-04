@@ -26,8 +26,17 @@ needed before you ship to the **Amazon Appstore**.
 The supporter entitlement is cached in `localStorage` (`mc_supporter`) and
 re-synced from Amazon on every launch via `initialize()` → `getEntitlements()`.
 
-**SKU:** `com.midnightcartographer.game.supporter` (must match in the JS
-service, the Java plugin, the tester JSON, and the Developer Console).
+**Tip tiers (SKUs):** the tip is offered as fixed-price tiers ($1 minimum,
+$2.99 default) because Amazon IAP can't take an arbitrary amount. Owning **any**
+tier grants the supporter entitlement. These must match across the JS service,
+the Java plugin, the tester JSON, and the Developer Console:
+
+| SKU | Price |
+|-----|-------|
+| `com.midnightcartographer.game.tip_1` | $1.00 |
+| `com.midnightcartographer.game.tip_3` | $2.99 (default) |
+| `com.midnightcartographer.game.tip_5` | $5.00 |
+| `com.midnightcartographer.game.tip_10` | $10.00 |
 
 ---
 
@@ -74,14 +83,19 @@ Merge [`native/android/AndroidManifest.additions.xml`](native/android/AndroidMan
 into `android/app/src/main/AndroidManifest.xml` — internet permissions and the
 Amazon IAP `ResponseReceiver`.
 
-## 6. Create the SKU in the Developer Console
+## 6. Create the tip-tier SKUs in the Developer Console
 
 1. Go to **Amazon Developer Console → your app → In-App Items**.
-2. Add a **Consumable? No → Entitlement** item.
-3. **SKU:** `com.midnightcartographer.game.supporter`
-4. Set the title (e.g. "Tip the Owl"), description, and price (e.g. $2.99),
-   then submit it with the app (entitlements must be published with/before the
-   build that uses them).
+2. For **each** tier in the table above, add an **Entitlement** item
+   (Consumable? **No**) with the matching SKU, title, and price:
+   - `com.midnightcartographer.game.tip_1` → $1.00
+   - `com.midnightcartographer.game.tip_3` → $2.99
+   - `com.midnightcartographer.game.tip_5` → $5.00
+   - `com.midnightcartographer.game.tip_10` → $10.00
+3. Submit them with the app (entitlements must be published with/before the
+   build that uses them). To offer a different set of amounts, edit `TIP_TIERS`
+   in `src/services/monetization.ts` and `SUPPORTER_SKUS` in
+   `MonetizationPlugin.java` to match.
 
 ---
 
@@ -135,9 +149,10 @@ and submit.
    adb push native/android/amazon.sdktester.json /sdcard/amazon.sdktester.json
    ```
 
-3. Open App Tester → it loads the SKU above.
+3. Open App Tester → it loads the tip-tier SKUs above.
 4. Launch your app **through App Tester** and exercise:
-   - **Tip the Owl** → purchase flow → button shows "Supporter — thank you".
+   - **Tip the Owl** → pick a tier ($1 / $2.99 / $5 / $10) → purchase flow →
+     button shows "Supporter — thank you".
    - **Restore purchase** → re-grants the entitlement on a fresh install.
 
 ---

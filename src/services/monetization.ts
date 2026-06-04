@@ -1,9 +1,11 @@
 // ---------------------------------------------------------------------------
 // Monetization: optional "Tip the Owl" support purchase (Amazon IAP)
 // ---------------------------------------------------------------------------
-// The game is free with no ads. Players can optionally make a one-time
-// purchase to support the developer, which grants a permanent "supporter"
-// entitlement (a small thank-you state in the UI).
+// The game is free with no ads. Players can optionally tip the developer.
+// Amazon IAP can't take an arbitrary amount, so the tip is offered as a few
+// fixed-price tiers ($1 minimum, $2.99 default). Buying any tier grants a
+// permanent "supporter" entitlement (a small thank-you state + clue-review
+// perk in the UI).
 //
 // The native work happens in a custom Capacitor plugin named "Monetization"
 // (see native/android/MonetizationPlugin.java and AMAZON_MONETIZATION_SETUP.md).
@@ -14,12 +16,28 @@
 
 import { Capacitor, registerPlugin } from '@capacitor/core';
 
-export const SUPPORTER_SKU = 'com.midnightcartographer.game.supporter';
+export interface TipTier {
+  sku: string;
+  /** Price in USD, for display + ordering. */
+  amount: number;
+  /** Short label shown on the chip, e.g. "$2.99". */
+  label: string;
+}
+
+// Preset tip tiers. $1 is the minimum; $2.99 is the default selection.
+export const TIP_TIERS: TipTier[] = [
+  { sku: 'com.midnightcartographer.game.tip_1', amount: 1, label: '$1' },
+  { sku: 'com.midnightcartographer.game.tip_3', amount: 2.99, label: '$2.99' },
+  { sku: 'com.midnightcartographer.game.tip_5', amount: 5, label: '$5' },
+  { sku: 'com.midnightcartographer.game.tip_10', amount: 10, label: '$10' },
+];
+
+export const DEFAULT_TIP_SKU = 'com.midnightcartographer.game.tip_3';
 
 interface MonetizationPlugin {
   /** Initialise the IAP listener and sync entitlements. */
   initialize(): Promise<void>;
-  /** Returns whether the user owns the supporter entitlement. */
+  /** Returns whether the user owns any supporter (tip) entitlement. */
   getEntitlements(): Promise<{ supporter: boolean }>;
   /** Start the Amazon purchase flow for the given SKU. */
   purchase(options: { sku: string }): Promise<{ owned: boolean }>;
@@ -86,17 +104,18 @@ export async function initMonetization(): Promise<void> {
 }
 
 /**
- * Start the supporter purchase. Returns true if the entitlement is owned
- * afterwards. On the web this simulates a successful purchase so the flow can
- * be exercised in the browser; the real receipt check happens on-device.
+ * Start a tip purchase for the given tier SKU (defaults to the $2.99 tier).
+ * Returns true if the supporter entitlement is owned afterwards. On the web
+ * this simulates a successful purchase so the flow can be exercised in the
+ * browser; the real receipt check happens on-device.
  */
-export async function purchaseSupporter(): Promise<boolean> {
+export async function purchaseSupporter(sku: string = DEFAULT_TIP_SKU): Promise<boolean> {
   if (!isNative) {
     writeCache(true); // dev/browser simulation only
     return true;
   }
   try {
-    const { owned } = await Monetization.purchase({ sku: SUPPORTER_SKU });
+    const { owned } = await Monetization.purchase({ sku });
     if (owned) writeCache(true);
     return owned;
   } catch (err) {

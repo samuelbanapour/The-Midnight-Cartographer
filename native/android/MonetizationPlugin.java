@@ -31,13 +31,26 @@ import com.amazon.device.iap.model.PurchaseUpdatesResponse;
 import com.amazon.device.iap.model.Receipt;
 import com.amazon.device.iap.model.UserDataResponse;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 @CapacitorPlugin(name = "Monetization")
 public class MonetizationPlugin extends Plugin {
 
     private static final String TAG = "Monetization";
 
-    // The SKU you create in the Amazon Developer Console (must match the JS side).
-    private static final String SUPPORTER_SKU = "com.midnightcartographer.game.supporter";
+    // The tip-tier SKUs you create in the Amazon Developer Console (must match
+    // the JS side). Owning ANY of them grants the supporter entitlement.
+    private static final Set<String> SUPPORTER_SKUS = new HashSet<>(Arrays.asList(
+        "com.midnightcartographer.game.tip_1",
+        "com.midnightcartographer.game.tip_3",
+        "com.midnightcartographer.game.tip_5",
+        "com.midnightcartographer.game.tip_10"
+    ));
+
+    // Default tier ($2.99) used if the JS side does not specify a SKU.
+    private static final String DEFAULT_TIP_SKU = "com.midnightcartographer.game.tip_3";
 
     private boolean supporter = false;
 
@@ -71,7 +84,7 @@ public class MonetizationPlugin extends Plugin {
 
     @PluginMethod
     public void purchase(PluginCall call) {
-        String sku = call.getString("sku", SUPPORTER_SKU);
+        String sku = call.getString("sku", DEFAULT_TIP_SKU);
         pendingPurchaseCall = call;
         PurchasingService.purchase(sku);
     }
@@ -121,7 +134,7 @@ public class MonetizationPlugin extends Plugin {
         public void onPurchaseUpdatesResponse(PurchaseUpdatesResponse response) {
             if (response.getRequestStatus() == PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL) {
                 for (Receipt receipt : response.getReceipts()) {
-                    if (!receipt.isCanceled() && SUPPORTER_SKU.equals(receipt.getSku())) {
+                    if (!receipt.isCanceled() && SUPPORTER_SKUS.contains(receipt.getSku())) {
                         supporter = true;
                         PurchasingService.notifyFulfillment(
                             receipt.getReceiptId(), FulfillmentResult.FULFILLED);
@@ -138,7 +151,7 @@ public class MonetizationPlugin extends Plugin {
     };
 
     private void grantEntitlement(Receipt receipt) {
-        if (receipt != null && SUPPORTER_SKU.equals(receipt.getSku())) {
+        if (receipt != null && SUPPORTER_SKUS.contains(receipt.getSku())) {
             supporter = true;
             PurchasingService.notifyFulfillment(
                 receipt.getReceiptId(), FulfillmentResult.FULFILLED);

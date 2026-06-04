@@ -1,9 +1,30 @@
 {
-  "com.midnightcartographer.game.supporter": {
+  "com.midnightcartographer.game.tip_1": {
+    "itemType": "ENTITLED",
+    "price": 1.00,
+    "title": "Tip the Owl — $1",
+    "description": "A small tip to support the shop. Thank you, friend!",
+    "smallIconUrl": "https://www.amazon.com/some-icon.png"
+  },
+  "com.midnightcartographer.game.tip_3": {
     "itemType": "ENTITLED",
     "price": 2.99,
-    "title": "Tip the Owl",
-    "description": "A one-time tip to support the shop. Thank you, friend!",
+    "title": "Tip the Owl — $2.99",
+    "description": "A tip to support the shop. Thank you, friend!",
+    "smallIconUrl": "https://www.amazon.com/some-icon.png"
+  },
+  "com.midnightcartographer.game.tip_5": {
+    "itemType": "ENTITLED",
+    "price": 5.00,
+    "title": "Tip the Owl — $5",
+    "description": "A generous tip to support the shop. Thank you, friend!",
+    "smallIconUrl": "https://www.amazon.com/some-icon.png"
+  },
+  "com.midnightcartographer.game.tip_10": {
+    "itemType": "ENTITLED",
+    "price": 10.00,
+    "title": "Tip the Owl — $10",
+    "description": "A very generous tip to support the shop. Thank you, friend!",
     "smallIconUrl": "https://www.amazon.com/some-icon.png"
   }
 }
