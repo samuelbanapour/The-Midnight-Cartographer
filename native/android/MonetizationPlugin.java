@@ -55,6 +55,7 @@ public class MonetizationPlugin extends Plugin {
     private boolean supporter = false;
 
     // Outstanding calls awaiting an async Amazon callback.
+    private PluginCall pendingInitCall;
     private PluginCall pendingPurchaseCall;
     private PluginCall pendingRestoreCall;
 
@@ -69,10 +70,12 @@ public class MonetizationPlugin extends Plugin {
 
     @PluginMethod
     public void initialize(PluginCall call) {
-        // Sync user + entitlements.
+        // Sync user + entitlements. Resolve only AFTER getPurchaseUpdates() returns
+        // (via onPurchaseUpdatesResponse) so a following getEntitlements() reads the
+        // synced value instead of racing the async callback.
+        pendingInitCall = call;
         PurchasingService.getUserData();
         PurchasingService.getPurchaseUpdates(true);
-        call.resolve();
     }
 
     @PluginMethod
@@ -147,6 +150,7 @@ public class MonetizationPlugin extends Plugin {
                 }
             }
             resolveRestore();
+            resolveInit();
         }
     };
 
@@ -173,6 +177,15 @@ public class MonetizationPlugin extends Plugin {
             ret.put("supporter", supporter);
             pendingRestoreCall.resolve(ret);
             pendingRestoreCall = null;
+        }
+    }
+
+    private void resolveInit() {
+        if (pendingInitCall != null) {
+            JSObject ret = new JSObject();
+            ret.put("supporter", supporter);
+            pendingInitCall.resolve(ret);
+            pendingInitCall = null;
         }
     }
 }
